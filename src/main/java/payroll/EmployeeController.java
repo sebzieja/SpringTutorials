@@ -1,32 +1,52 @@
 package payroll;
 
+import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.Resources;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
+import java.util.stream.Collectors;
+
+import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
+import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 
 @RestController
 class EmployeeController {
 
     private final EmployeeRepository repository;
 
-    EmployeeController(EmployeeRepository repository) {
+    private final EmployeeResourceAssembler assembler;
+
+    EmployeeController(EmployeeRepository repository, EmployeeResourceAssembler assembler) {
         this.repository = repository;
+        this.assembler = assembler;
     }
 
     @GetMapping("/employees")
-    List<Employee> all(){
-        return repository.findAll();
+    Resources<Resource<Employee>> all(){
+        List<Resource<Employee>> employees = repository.findAll().stream()
+                .map(assembler::toResource)
+                .collect(Collectors.toList());
+
+        return new Resources<>(employees, linkTo(methodOn(EmployeeController.class).all()).withSelfRel());
     }
 
     @PostMapping("/employees")
-    Employee newEmployee(@RequestBody Employee newEmployee) {
-        return repository.save(newEmployee);
+    ResponseEntity<?> newEmployee(@RequestBody Employee newEmployee) throws URISyntaxException {
+
+        Resource<Employee> resource = assembler.toResource(repository.save(newEmployee));
+        return ResponseEntity.created(new URI(resource.getId().expand().getHref())).body(resource);
     }
 
     @GetMapping("/employees/{id}")
-    Employee one(@PathVariable Long id) {
-        return repository.findById(id)
+    Resource<Employee> one(@PathVariable Long id) {
+        Employee employee = repository.findById(id)
                 .orElseThrow(() -> new EmployeeNotFoundException(id));
+
+        return assembler.toResource(employee);
     }
 
     @PutMapping("/employees/{id}")

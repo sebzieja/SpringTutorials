@@ -11,11 +11,25 @@ import javax.persistence.Id;
 public class Employee {
 
     private @Id @GeneratedValue Long id;
-    private String name;
+    private String firstName;
+    private String lastName;
     private String role;
 
-    Employee(String name, String role) {
-        this.name = name;
+    Employee(String firstName, String lastName, String role) {
+        this.firstName = firstName;
+        this.lastName = lastName;
         this.role = role;
     }
+
+    public String getName(){
+        return this.firstName + " " + this.lastName;
+    }
+
+    public void setName(String name){
+        String[] partsOfName = name.split(" ");
+        this.firstName = partsOfName[0];
+        this.firstName = partsOfName[1];
+    }
+
+    Employee(){}
 }
