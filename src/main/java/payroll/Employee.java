@@ -21,6 +21,11 @@ public class Employee {
         this.role = role;
     }
 
+    Employee(String name, String role){
+        setName(name);
+        this.role = role;
+    }
+
     public String getName(){
         return this.firstName + " " + this.lastName;
     }
@@ -28,7 +33,7 @@ public class Employee {
     public void setName(String name){
         String[] partsOfName = name.split(" ");
         this.firstName = partsOfName[0];
-        this.firstName = partsOfName[1];
+        this.lastName = partsOfName[1];
     }
 
     Employee(){}
